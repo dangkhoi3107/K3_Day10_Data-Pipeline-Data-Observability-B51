@@ -101,7 +101,7 @@ Trong phạm vi `crossref.py`, tôi không gặp lỗi runtime chặn cứng c�
 
 ### Metrics chính
 
-> Số liệu dưới đây trích từ báo cáo cá nhân của Role 4 (`NguyenDangDuc_2A202601787.md`) và Role 5 (`01051-DoTuanSon.md`), khớp nhau giữa hai báo cáo độc lập. Tôi không tự chạy lại pipeline evaluation trên máy này nên không tự kiểm chứng lại được các số này — không phải kết quả tôi tự đo.
+> Số liệu dưới đây trích từ báo cáo cá nhân của Role 4 (`individual_01787_NguyenDangDuc.md`) và Role 5 (`individual_01051_DoTuanSon.md`), khớp nhau giữa hai báo cáo độc lập. Tôi không tự chạy lại pipeline evaluation trên máy này nên không tự kiểm chứng lại được các số này — không phải kết quả tôi tự đo.
 
 | Metric/signal          | Baseline | Corrupted | Repaired | Nhận xét của cá nhân |
 | ---------------------- | -------: | --------: | -------: | ------------------------- |

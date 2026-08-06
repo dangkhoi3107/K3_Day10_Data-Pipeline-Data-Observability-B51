@@ -5,10 +5,10 @@
 | Thông tin | Nội dung |
 | :--- | :--- |
 | Họ và tên | Đỗ Tuấn Sơn |
-| MSSV | 01051 |
+| MSSV | 2A202601051 |
 | Khóa/Lớp | K3 |
-| Tên nhóm | Nhóm Data Observability Lab |
-| Vai trò chính | Người 5 — Pipeline Integration & Evidence Owner |
+| Tên nhóm | Nhóm B51 |
+| Vai trò chính | Role 5 — Pipeline Integration & Evidence Owner |
 | Repository | `https://github.com/dangkhoi3107/K3_Day10_Data-Pipeline-Data-Observability-B51` |
 | Ngày hoàn thành | 2026-08-06 |
 
@@ -16,7 +16,7 @@
 
 ## 2. Vai trò và phạm vi công việc
 
-Là **Người 5 — Integration**, tôi là nút thắt cuối của cả hai pipeline: lắp ráp các module do 4 thành viên còn lại bàn giao (ingestion, cleaning, eval-set, observability, corruption) thành hai luồng chạy được thật và sinh ra bằng chứng số liệu cuối cùng cho cả nhóm. Tôi **không** sửa code của bất kỳ ai — chỉ gọi lại đúng contract họ đã thống nhất.
+Là **Role 5 — Integration**, tôi là nút thắt cuối của cả hai pipeline: lắp ráp các module do 4 thành viên còn lại bàn giao (ingestion, cleaning, eval-set, observability, corruption) thành hai luồng chạy được thật và sinh ra bằng chứng số liệu cuối cùng cho cả nhóm. Tôi **không** sửa code của bất kỳ ai — chỉ gọi lại đúng contract họ đã thống nhất.
 
 ### Phần việc sở hữu
 
@@ -72,7 +72,7 @@ Là **Người 5 — Integration**, tôi là nút thắt cuối của cả hai p
 
 ## 6. Cam kết cá nhân
 
-- [x] Nội dung báo cáo phản ánh đúng phần việc Người 5 (Integration) và mức hiểu của tôi.
+- [x] Nội dung báo cáo phản ánh đúng phần việc Role 5 (Integration) và mức hiểu của tôi.
 - [x] Có thể giải thích luồng end-to-end từ API ingestion → cleaning → index → RAG evaluation → observability → corruption → repair.
 - [x] Mọi kết luận đều được kiểm chứng bằng file artifacts trong `data/results/`, `data/quality/`, `data/reports/`.
 - [x] Đã rà `git log`/`.gitignore` — không commit `.env` hay API key vào repo.

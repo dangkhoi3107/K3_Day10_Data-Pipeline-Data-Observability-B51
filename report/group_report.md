@@ -14,18 +14,18 @@
 | STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
 | --: | --- | --- | --- | --- |
 | 1 | Phạm Nguyễn Đăng Khôi | 2A202601243 | Role 1 — Source Ingestion Owner | `src/ingestion/crossref.py` |
-| 2 | Trần Trung | *[cần bổ sung MSSV]* | Role 2 — Cleaning & Evaluation-Set Owner | `src/ingestion/cleaning.py`, `src/evaluation/testset.py` |
-| 3 | Vi Minh Hiển | *[cần bổ sung MSSV]* | Role 3 — Data Observability Owner | `src/observability/quality.py`, `src/observability/reporting.py` |
+| 2 | Trần Đức Bảo Trung | 2A202601269 | Role 2 — Cleaning & Evaluation-Set Owner | `src/ingestion/cleaning.py`, `src/evaluation/testset.py` |
+| 3 | Vi Minh Hiển | 2A202601743 | Role 3 — Data Observability Owner | `src/observability/quality.py`, `src/observability/reporting.py` |
 | 4 | Nguyễn Đăng Đức | 2A202601787 | Role 4 — Corruption & Repair-Validation Owner | `src/ingestion/corruption.py` |
-| 5 | Đỗ Tuấn Sơn | 01051 | Role 5 — Pipeline Integration & Evidence Owner | `src/pipelines/phase1.py`, `src/pipelines/corruption_flow.py` |
+| 5 | Đỗ Tuấn Sơn | 2A202601051 | Role 5 — Pipeline Integration & Evidence Owner | `src/pipelines/phase1.py`, `src/pipelines/corruption_flow.py` |
 
-> Phân vai theo `report/phan-cong-5-nguoi.md`. MSSV của Trần Trung và Vi Minh Hiển chưa có trong bất kỳ commit hay báo cáo nào tính đến thời điểm biên soạn — cần hai bạn tự bổ sung vào báo cáo cá nhân của mình trước khi nộp.
+> Phân vai theo `report/phan-cong-5-nguoi.md`. Báo cáo cá nhân từng người: `report/individual_01243_PhamNguyenDangKhoi.md`, `report/individual_01269_TranDucBaoTrung.md`, `report/individual_01743_ViMinhHien.md`, `report/individual_01787_NguyenDangDuc.md`, `report/individual_01051_DoTuanSon.md`. File của Trung mới điền mục 1 (thông tin cá nhân) — mục 2–10 vẫn cần bạn tự hoàn thành. Hiển đã bổ sung đầy đủ mục 2–10.
 
 ## 2. Tóm tắt kết quả
 
 Nhóm đã xây dựng pipeline dữ liệu end-to-end cho hệ thống RAG trên bài báo học thuật lấy từ Crossref API, đi đủ qua 2 pha theo yêu cầu bài lab. Ở pha baseline, Role 1 lấy 24 bản ghi thô từ Crossref (đúng `max_results` cấu hình), Role 2 làm sạch thành dataset chuẩn hoá kèm `text_for_embedding`, dựng bộ test 10 câu hỏi đóng băng, và pipeline (Role 5) build index ChromaDB + MiniLM rồi đánh giá baseline. Theo báo cáo của Role 4 và Role 5, baseline đạt `retrieval_hit_rate = 1.0000`, `mean_token_f1 = 0.1059`, Data Quality và Freshness đều **PASS**. Ở pha corruption, Role 4 áp 4 kịch bản lỗi có kiểm soát (xoá 2 bản ghi trùng `ground_truth_doc_ids`, làm rỗng 3 summary, đẩy ngày xuất bản của 3 bản ghi về năm 2000, nhân đôi 2 dòng) — kết quả `retrieval_hit_rate` giảm còn 0.8000, `mean_token_f1` giảm còn 0.0649, Quality chuyển **FAIL** và Freshness chuyển **STALE**, đúng như kỳ vọng thiết kế corruption trúng test set. Bước Repair (Role 5) đọc lại raw snapshot gốc (không gọi lại API Crossref) và chạy lại đúng hàm cleaning của Role 2, đưa cả `retrieval_hit_rate` và `mean_token_f1` về đúng mức baseline, Quality/Freshness quay lại **PASS/FRESH**.
 
-Giới hạn lớn nhất hiện tại: các artifact JSON thực tế (`data/results/*.json`, `data/clean/*`, `data/quality/*`) không có trong git (thư mục `data/` đã được thêm vào `.gitignore`) và không có mặt trên máy đang biên soạn báo cáo này — số liệu ở đây được tổng hợp từ báo cáo cá nhân của Role 4 và Role 5 (khớp nhau giữa hai nguồn độc lập), không phải số tự chạy lại và kiểm chứng trên nhánh `main` hiện tại. Role 2 và Role 3 cũng chưa có báo cáo cá nhân riêng tính đến thời điểm này.
+Giới hạn lớn nhất hiện tại: các artifact JSON thực tế (`data/results/*.json`, `data/clean/*`, `data/quality/*`) không có trong git (thư mục `data/` đã được thêm vào `.gitignore`) và không có mặt trên máy đang biên soạn báo cáo này — số liệu ở đây được tổng hợp từ báo cáo cá nhân của Role 4 và Role 5 (khớp nhau giữa hai nguồn độc lập), không phải số tự chạy lại và kiểm chứng trên nhánh `main` hiện tại. Role 2 (Trần Đức Bảo Trung) chưa có báo cáo cá nhân đầy đủ tính đến thời điểm này (mới điền mục 1); Role 3 (Vi Minh Hiển) đã bổ sung báo cáo cá nhân đầy đủ.
 
 ## 3. Kiến trúc và luồng dữ liệu
 
@@ -217,7 +217,7 @@ Repair đảm bảo dữ liệu được phục hồi từ nguồn đáng tin c�
 
 ## 10. So sánh baseline, corrupted và repaired
 
-> Nguồn: báo cáo cá nhân Role 4 (`NguyenDangDuc_2A202601787.md`) và Role 5 (`01051-DoTuanSon.md`), hai nguồn độc lập cho cùng một bộ số. `judge_accuracy`/`mean_judge_score` không có trong hai báo cáo này (xem ghi chú mục 7).
+> Nguồn: báo cáo cá nhân Role 4 (`individual_01787_NguyenDangDuc.md`) và Role 5 (`individual_01051_DoTuanSon.md`), hai nguồn độc lập cho cùng một bộ số. `judge_accuracy`/`mean_judge_score` không có trong hai báo cáo này (xem ghi chú mục 7).
 
 | Metric/signal            | Baseline | Corrupted | Repaired | Thay đổi do corruption | Mức phục hồi | Nhận xét   |
 | ------------------------ | -------: | --------: | -------: | -----------------------: | --------------: | ------------ |
@@ -234,7 +234,7 @@ Hai kết luận nhân quả có bằng chứng artifact đi kèm:
 ## 11. Vấn đề tích hợp quan trọng
 
 - **Triệu chứng:** Toàn bộ commit code cho Role 2 (`cleaning.py`, `testset.py`) và Role 3 (`quality.py`, `reporting.py`) — cộng thêm một bản `crossref.py`/UI phụ — đều nằm trong một commit duy nhất (`9b5143d "add"`) dưới tài khoản GitHub của Vi Minh Hiển, thay vì tách theo từng owner như ma trận phân công ở `phan-cong-5-nguoi.md` (mục 6) quy định.
-- **Nguyên nhân:** Theo xác nhận của nhóm, chỉ máy của Hiển cài đặt được môi trường chạy trong buổi làm việc, nên phần việc của Trần Trung (Role 2) được thực hiện nhưng commit qua máy/tài khoản Hiển; Hiển tự đảm nhiệm Role 3. Nguyên nhân kỹ thuật cụ thể khiến môi trường của các thành viên khác không chạy được (phiên bản Python, thiếu dependency, hay lỗi khác) chưa được ghi lại.
+- **Nguyên nhân:** Theo xác nhận của nhóm, chỉ máy của Hiển cài đặt được môi trường chạy trong buổi làm việc, nên phần việc của Trần Đức Bảo Trung (Role 2) được thực hiện nhưng commit qua máy/tài khoản Hiển; Hiển tự đảm nhiệm Role 3. Nguyên nhân kỹ thuật cụ thể khiến môi trường của các thành viên khác không chạy được (phiên bản Python, thiếu dependency, hay lỗi khác) chưa được ghi lại.
 - **Cách xử lý:** Nhóm chấp nhận lệch giữa "người sở hữu vai trò" và "người đứng tên commit" cho buổi làm việc này, ghi rõ trong bảng phân công ở mục 1 để không đánh giá nhầm đóng góp.
 - **Cách xác minh:** `git log --all --format='%an %s'` cho thấy toàn bộ thay đổi `cleaning.py`/`testset.py`/`quality.py`/`reporting.py` nằm trong đúng 1 commit của Hiển; không có commit nào khác chỉnh 4 file này.
 
@@ -243,18 +243,18 @@ Hai kết luận nhân quả có bằng chứng artifact đi kèm:
 | Giới hạn hiện tại | Ảnh hưởng   | Hướng cải thiện có thể kiểm chứng |
 | --------------------- | -------------- | ----------------------------------------- |
 | `data/` bị thêm vào `.gitignore` sau khi một số file raw đã được commit trước đó (`data/raw/*.json` vẫn còn tracked từ commit `9b8e9f2`, các artifact khác thì không) — kết quả pipeline thật (`baseline_metrics.json`, `corrupted_metrics.json`, `repaired_metrics.json`, các report `.md`) không nằm trong git ở bất kỳ commit nào | Không ai review được artifact gốc, chỉ có số liệu chép tay trong báo cáo cá nhân — vi phạm tinh thần "kết luận dựa trên artifact thực tế" của `report/README.md` mục 2 | Trước khi nộp: chạy lại `script/run_phase1.py` và `script/run_corruption_flow.py` trên một máy, đính kèm toàn bộ `data/results/*.json` và `data/reports/*.md` dưới dạng release asset hoặc phụ lục nộp cùng báo cáo (không cần bỏ `.gitignore`) |
-| Role 2 và Role 3 (Trần Trung, Vi Minh Hiển) chưa có `report/individual_[MSSV].md` riêng | Không đối chiếu được mức hiểu và phần việc thực tế của 2 thành viên này theo đúng mẫu báo cáo | Trung và Hiển hoàn thành `report/<MSSV>_HoTen.md` theo mẫu `report/individual_report.md`, đặc biệt mục 6 (`quy tắc vàng` môi trường) để ghi lại nguyên nhân môi trường không chạy được |
+| Role 2 (Trần Đức Bảo Trung) đã có file `report/individual_01269_TranDucBaoTrung.md`, nhưng mới điền mục 1 (thông tin cá nhân), mục 2–10 còn để trống | Không đối chiếu được mức hiểu và phần việc thực tế của thành viên này theo đúng mẫu báo cáo | Trung tự hoàn thành mục 2–10 trong file của mình, đặc biệt mục 6 (ghi lại nguyên nhân môi trường không chạy được lúc buổi làm việc) |
 | `judge_accuracy`/`mean_judge_score` không nhất quán giữa các nguồn (chỉ có trong bản nháp `group_report.md` cũ, không có trong báo cáo Role 4/5) | Bảng metrics ở mục 7/10 không đầy đủ, rủi ro sai số nếu dùng số chưa xác nhận | Role 5 chạy lại, đối chiếu trực tiếp với `data/results/baseline_metrics.json` thật rồi cập nhật lại 2 dòng này |
 | Chưa có ai re-run cả 2 pipeline trên đúng `main` đã đồng bộ (commit `4d3eca4`) để tự kiểm chứng lại toàn bộ số liệu trong báo cáo này | Số liệu ở mục 7/10 là tổng hợp gián tiếp, chưa phải bằng chứng chạy trực tiếp trên phiên bản code cuối cùng dùng để nộp | Chạy lại 2 script trên `main`, so khớp số liệu mới với bảng ở mục 10 trước khi nộp chính thức |
 
 ## 13. Checklist trước khi nộp
 
 - [x] Thông tin nhóm và repository chính xác.
-- [ ] Phân công khớp với module, artifact và kết quả thực tế — **MSSV của Trần Trung và Vi Minh Hiển còn thiếu.**
+- [x] Phân công khớp với module, artifact và kết quả thực tế — họ tên và MSSV đầy đủ cho cả 5 thành viên.
 - [ ] Lệnh tái hiện đã được chạy lại trên phiên bản dùng để nộp — **chưa re-run trên `main` đã đồng bộ (commit `4d3eca4`).**
 - [x] Baseline, corrupted và repaired dùng cùng evaluation set (`data/eval/test_set.json`, không refresh giữa 3 trạng thái).
 - [ ] Bảng metrics khớp với các file trong `data/results/` — **chưa có file JSON gốc đối chiếu trực tiếp trong repo.**
 - [ ] Quality/freshness conclusions khớp với `data/quality/` — **cùng giới hạn như trên.**
 - [ ] Các đường dẫn báo cáo và artifact truy cập được — **`data/reports/*.md` chưa có trong git.**
-- [ ] Mỗi thành viên đã hoàn thành báo cáo vai trò riêng — **còn thiếu Role 2 (Trần Trung) và Role 3 (Vi Minh Hiển).**
+- [ ] Mỗi thành viên đã hoàn thành báo cáo vai trò riêng — **Role 1 (Khôi), Role 3 (Hiển), Role 4 (Đức), Role 5 (Sơn) đã hoàn thành đầy đủ; file của Role 2 (Trần Đức Bảo Trung) đã tạo khung với đúng tên/MSSV, nhưng mục 2–10 vẫn cần bạn tự điền.**
 - [x] Không có `.env`, API key, token hoặc secret trong source, report, log hay ảnh (đã kiểm tra `.gitignore` có `.env`; không thấy secret trong các file đã đọc).
