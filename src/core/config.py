@@ -5,7 +5,11 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 import os
 
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
 from dotenv import load_dotenv
+
 
 
 @dataclass(frozen=True)

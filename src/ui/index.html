@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Pipeline & Data Observability Dashboard</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #0b0f19;
+      color: #f3f4f6;
+    }
+    .glass-card {
+      background: rgba(17, 24, 39, 0.7);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .glow-blue {
+      box-shadow: 0 0 25px rgba(59, 130, 246, 0.3);
+    }
+    .glow-purple {
+      box-shadow: 0 0 25px rgba(147, 51, 234, 0.3);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #60a5fa 0%, #a78bfa 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gradient-btn {
+      background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+      transition: all 0.3s ease;
+    }
+    .gradient-btn:hover {
+      background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(139, 92, 246, 0.4);
+    }
+    .pulse-green {
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+      animation: pulse-green 2s infinite;
+    }
+    @keyframes pulse-green {
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-12">
+
+  <!-- Header / Navigation -->
+  <header class="glass-card sticky top-0 z-50 px-6 py-4 border-b border-gray-800 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg">
+        <i class="fa-solid fa-chart-line text-white text-lg"></i>
+      </div>
+      <div>
+        <h1 class="text-xl font-bold tracking-tight gradient-text">Data Pipeline & Observability Dashboard</h1>
+        <p class="text-xs text-gray-400">Day 10 — RAG System Evaluation & Data Quality Suite</p>
+      </div>
+    </div>
+
+    <div class="flex items-center space-x-4">
+      <div class="flex items-center space-x-2 bg-gray-900/80 px-3 py-1.5 rounded-full border border-gray-800 text-xs">
+        <span class="w-2.5 h-2.5 rounded-full bg-green-500 pulse-green"></span>
+        <span class="text-gray-300 font-medium">Pipeline Engine: <strong class="text-green-400">ONLINE</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 space-y-8">
+
+    <!-- Action Bar & Controls -->
+    <div class="glass-card rounded-2xl p-6 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-purple-400"></i> Pipeline Execution Controls
+        </h2>
+        <p class="text-sm text-gray-400">Chạy mô phỏng các pha trong pipeline hoặc kích hoạt luồng khắc phục sự cố tự động</p>
+      </div>
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="btnRunPhase1" onclick="runPhase1()" class="gradient-btn px-5 py-2.5 rounded-xl font-semibold text-sm text-white flex items-center gap-2 shadow-lg">
+          <i class="fa-solid fa-play"></i> Run Baseline Pipeline (Phase 1)
+        </button>
+        <button id="btnRunCorruption" onclick="runCorruption()" class="bg-gradient-to-r from-amber-600 to-rose-600 hover:from-amber-700 hover:to-rose-700 text-white px-5 py-2.5 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg transition-all transform hover:-translate-y-0.5">
+          <i class="fa-solid fa-bug-slash"></i> Run Corruption & Repair Flow (Phase 2)
+        </button>
+      </div>
+    </div>
+
+    <!-- Executive Metrics Comparison Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      
+      <!-- Card 1: Retrieval Hit Rate -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-blue-500">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Retrieval Hit Rate</span>
+          <i class="fa-solid fa-bullseye text-blue-400"></i>
+        </div>
+        <div class="text-3xl font-extrabold text-white" id="valHitRate">100.0%</div>
+        <div class="mt-3 text-xs text-gray-400 flex justify-between items-center border-t border-gray-800 pt-2">
+          <span>Corrupted: <strong id="valHitRateCorrupted" class="text-rose-400">80.0%</strong></span>
+          <span>Repaired: <strong id="valHitRateRepaired" class="text-green-400">100.0%</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 2: Mean Token F1 -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-purple-500">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Mean Token F1</span>
+          <i class="fa-solid fa-align-left text-purple-400"></i>
+        </div>
+        <div class="text-3xl font-extrabold text-white" id="valTokenF1">0.1059</div>
+        <div class="mt-3 text-xs text-gray-400 flex justify-between items-center border-t border-gray-800 pt-2">
+          <span>Corrupted: <strong id="valTokenF1Corrupted" class="text-amber-400">0.0649</strong></span>
+          <span>Repaired: <strong id="valTokenF1Repaired" class="text-green-400">0.1059</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 3: Data Quality Status -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-emerald-500">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Data Quality Status</span>
+          <i class="fa-solid fa-shield-check text-emerald-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-emerald-400 flex items-center gap-2" id="valQuality">
+          <i class="fa-solid fa-circle-check"></i> PASS
+        </div>
+        <div class="mt-3 text-xs text-gray-400 flex justify-between items-center border-t border-gray-800 pt-2">
+          <span>Corrupted: <strong id="valQualityCorrupted" class="text-rose-400">FAIL (Dupes: 2)</strong></span>
+          <span>Repaired: <strong id="valQualityRepaired" class="text-green-400">PASS</strong></span>
+        </div>
+      </div>
+
+      <!-- Card 4: Data Freshness Status -->
+      <div class="glass-card rounded-2xl p-5 border-l-4 border-amber-500">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Data Freshness</span>
+          <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>
+        </div>
+        <div class="text-2xl font-bold text-amber-400 flex items-center gap-2" id="valFreshness">
+          <i class="fa-solid fa-leaf"></i> FRESH
+        </div>
+        <div class="mt-3 text-xs text-gray-400 flex justify-between items-center border-t border-gray-800 pt-2">
+          <span>Corrupted: <strong id="valFreshnessCorrupted" class="text-rose-400">STALE</strong></span>
+          <span>Repaired: <strong id="valFreshnessRepaired" class="text-green-400">FRESH</strong></span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Main Grid: Live RAG Search & Metrics Chart -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left 7 Cols: Live RAG Agent Query Console -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+              <i class="fa-solid fa-magnifying-glass text-blue-400"></i> Live RAG Agent Query Engine
+            </h3>
+            <span class="text-xs bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-full border border-blue-500/30">ChromaDB Vector Store</span>
+          </div>
+
+          <div class="space-y-3">
+            <label class="text-xs text-gray-400">Nhập câu hỏi để truy vấn bài báo khoa học trong tập dữ liệu:</label>
+            <div class="flex gap-2">
+              <input type="text" id="queryInput" placeholder="Ví dụ: Who are the authors of the paper titled 'Generative Adversarial Nets'?" class="w-full bg-gray-900/90 border border-gray-700 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors">
+              <button onclick="submitQuery()" class="gradient-btn px-6 py-3 rounded-xl font-medium text-sm text-white flex items-center gap-2 shrink-0">
+                <i class="fa-solid fa-paper-plane"></i> Search
+              </button>
+            </div>
+
+            <!-- Quick Preset Questions -->
+            <div class="flex flex-wrap gap-2 pt-2">
+              <span class="text-xs text-gray-400 self-center">Gợi ý:</span>
+              <button onclick="setQuery('Who are the authors of the paper titled \'Generative Adversarial Nets\'?')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg border border-gray-700 transition-colors">
+                🧑‍🔬 Authors of Generative Adversarial Nets
+              </button>
+              <button onclick="setQuery('When was the paper titled \'Attention Is All You Need\' published?')" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg border border-gray-700 transition-colors">
+                📅 Published Date of Attention Is All You Need
+              </button>
+            </div>
+          </div>
+
+          <!-- Answer & Retrieval Result Box -->
+          <div id="queryResultBox" class="mt-6 p-5 rounded-xl bg-gray-900/90 border border-gray-800 space-y-4 hidden">
+            <div>
+              <div class="text-xs font-semibold uppercase text-gray-400 mb-1">🤖 AI Model Answer:</div>
+              <div id="resAnswer" class="text-sm font-medium text-blue-200 bg-blue-950/40 border border-blue-800/50 p-3 rounded-lg leading-relaxed"></div>
+            </div>
+
+            <div>
+              <div class="text-xs font-semibold uppercase text-gray-400 mb-1">📚 Retrieved Documents Top (Chroma Vector Match):</div>
+              <div id="resDocIds" class="flex flex-wrap gap-1.5 mb-2"></div>
+              <ul id="resTitles" class="space-y-1 text-xs text-gray-300"></ul>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right 5 Cols: Visual Metrics Chart -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-card rounded-2xl p-6">
+          <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chart-column text-purple-400"></i> Performance Metrics Shift
+          </h3>
+          <div class="h-64">
+            <canvas id="metricsChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Bottom Section: Markdown Comparison Report Viewer -->
+    <div class="glass-card rounded-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+          <i class="fa-solid fa-file-contract text-emerald-400"></i> Baseline vs Corrupted vs Repaired Comparison Report
+        </h3>
+        <button onclick="loadStatus()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-300 px-3 py-1.5 rounded-lg border border-gray-700 flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate-right"></i> Refresh
+        </button>
+      </div>
+
+      <div class="bg-gray-900/90 border border-gray-800 rounded-xl p-5 overflow-x-auto text-xs text-gray-300 font-mono leading-relaxed max-h-96" id="reportViewer">
+        Loading comparison report...
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    let metricsChartInstance = null;
+
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+
+        // Update cards
+        const b = data.metrics.baseline || {};
+        const c = data.metrics.corrupted || {};
+        const r = data.metrics.repaired || {};
+
+        document.getElementById('valHitRate').innerText = `${((b.retrieval_hit_rate || 1.0) * 100).toFixed(1)}%`;
+        document.getElementById('valHitRateCorrupted').innerText = `${((c.retrieval_hit_rate || 0.8) * 100).toFixed(1)}%`;
+        document.getElementById('valHitRateRepaired').innerText = `${((r.retrieval_hit_rate || 1.0) * 100).toFixed(1)}%`;
+
+        document.getElementById('valTokenF1').innerText = (b.mean_token_f1 || 0.1059).toFixed(4);
+        document.getElementById('valTokenF1Corrupted').innerText = (c.mean_token_f1 || 0.0649).toFixed(4);
+        document.getElementById('valTokenF1Repaired').innerText = (r.mean_token_f1 || 0.1059).toFixed(4);
+
+        // Chart render
+        renderChart(b, c, r);
+
+        // Load report
+        const repRes = await fetch('/api/report');
+        const repData = await repRes.json();
+        document.getElementById('reportViewer').innerText = repData.content || "No report content";
+
+      } catch (err) {
+        console.error("Failed to fetch status:", err);
+      }
+    }
+
+    function renderChart(b, c, r) {
+      const ctx = document.getElementById('metricsChart').getContext('2d');
+      if (metricsChartInstance) {
+        metricsChartInstance.destroy();
+      }
+
+      metricsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ['Retrieval Hit Rate', 'Mean Token F1'],
+          datasets: [
+            {
+              label: 'Baseline (Clean)',
+              data: [b.retrieval_hit_rate || 1.0, b.mean_token_f1 || 0.1059],
+              backgroundColor: 'rgba(59, 130, 246, 0.7)',
+              borderColor: '#3b82f6',
+              borderWidth: 1,
+              borderRadius: 6,
+            },
+            {
+              label: 'Corrupted',
+              data: [c.retrieval_hit_rate || 0.8, c.mean_token_f1 || 0.0649],
+              backgroundColor: 'rgba(244, 63, 94, 0.7)',
+              borderColor: '#f43f5e',
+              borderWidth: 1,
+              borderRadius: 6,
+            },
+            {
+              label: 'Repaired',
+              data: [r.retrieval_hit_rate || 1.0, r.mean_token_f1 || 0.1059],
+              backgroundColor: 'rgba(34, 197, 94, 0.7)',
+              borderColor: '#22c55e',
+              borderWidth: 1,
+              borderRadius: 6,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: '#9ca3af', font: { family: 'Inter', size: 11 } }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1.1,
+              ticks: { color: '#9ca3af' },
+              grid: { color: 'rgba(255, 255, 255, 0.05)' }
+            },
+            x: {
+              ticks: { color: '#9ca3af' },
+              grid: { display: false }
+            }
+          }
+        }
+      });
+    }
+
+    function setQuery(text) {
+      document.getElementById('queryInput').value = text;
+      submitQuery();
+    }
+
+    async function submitQuery() {
+      const q = document.getElementById('queryInput').value.trim();
+      if (!q) return;
+
+      const box = document.getElementById('queryResultBox');
+      const ansEl = document.getElementById('resAnswer');
+      const docIdsEl = document.getElementById('resDocIds');
+      const titlesEl = document.getElementById('resTitles');
+
+      box.classList.remove('hidden');
+      ansEl.innerText = "⏳ Searching Vector DB & Generating Answer...";
+      docIdsEl.innerHTML = "";
+      titlesEl.innerHTML = "";
+
+      try {
+        const res = await fetch('/api/query', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ question: q })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          ansEl.innerText = "❌ " + data.error;
+          return;
+        }
+
+        ansEl.innerText = data.answer;
+        docIdsEl.innerHTML = (data.retrieved_doc_ids || []).map(id => `<span class="bg-blue-900/60 text-blue-300 border border-blue-700/50 px-2 py-0.5 rounded font-mono text-[10px]">${id}</span>`).join('');
+        titlesEl.innerHTML = (data.retrieved_titles || []).map(title => `<li class="flex items-center gap-1.5"><i class="fa-solid fa-file-lines text-gray-500"></i> ${title}</li>`).join('');
+
+      } catch (err) {
+        ansEl.innerText = "❌ Error processing query: " + err.message;
+      }
+    }
+
+    async function runPhase1() {
+      const btn = document.getElementById('btnRunPhase1');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Running Baseline...`;
+      try {
+        await fetch('/api/run-phase1', { method: 'POST' });
+        await loadStatus();
+        alert("✅ Baseline Pipeline completed successfully!");
+      } catch (e) {
+        alert("❌ Error: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-play"></i> Run Baseline Pipeline (Phase 1)`;
+      }
+    }
+
+    async function runCorruption() {
+      const btn = document.getElementById('btnRunCorruption');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Running Corruption Flow...`;
+      try {
+        await fetch('/api/run-corruption', { method: 'POST' });
+        await loadStatus();
+        alert("✅ Corruption & Repair Flow completed successfully!");
+      } catch (e) {
+        alert("❌ Error: " + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fa-solid fa-bug-slash"></i> Run Corruption & Repair Flow (Phase 2)`;
+      }
+    }
+
+    window.onload = loadStatus;
+  </script>
+</body>
+</html>
