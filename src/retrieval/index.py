@@ -28,6 +28,8 @@ class LocalEmbeddingIndex:
         collection_name: str,
         documents: list[dict[str, Any]],
         persist_path: Path,
+        client: chromadb.PersistentClient | None = None,
+        collection: Any | None = None,
     ):
         self.settings = settings
         self.collection_name = collection_name
@@ -35,8 +37,8 @@ class LocalEmbeddingIndex:
         self.persist_path = persist_path
         self.embedding_backend = "chroma"
         self.embedding_model = MiniLMEmbeddings(settings.embedding_model)
-        self.client = chromadb.PersistentClient(path=str(persist_path))
-        self.collection = self.client.get_collection(name=collection_name)
+        self.client = client if client is not None else chromadb.PersistentClient(path=str(persist_path))
+        self.collection = collection if collection is not None else self.client.get_collection(name=collection_name)
         self.documents_by_paper_id = {document["paper_id"].lower(): document for document in documents}
         self.documents_by_title = {document["title"].lower(): document for document in documents}
 
@@ -94,14 +96,25 @@ class LocalEmbeddingIndex:
 
         embedding_model = MiniLMEmbeddings(settings.embedding_model)
         client = chromadb.PersistentClient(path=str(persist_path))
+        
         try:
-            client.delete_collection(name=collection_name)
+            collection = client.get_or_create_collection(
+                name=collection_name,
+                metadata={"hnsw:space": "cosine"},
+            )
+            existing = collection.get()
+            if existing and existing.get("ids"):
+                collection.delete(ids=existing["ids"])
         except Exception:
-            pass
-        collection = client.create_collection(
-            name=collection_name,
-            configuration={"hnsw": {"space": "cosine"}},
-        )
+            try:
+                client.delete_collection(name=collection_name)
+            except Exception:
+                pass
+            collection = client.create_collection(
+                name=collection_name,
+                metadata={"hnsw:space": "cosine"},
+            )
+
         embeddings = embedding_model.embed_documents([document["content"] for document in documents])
         collection.add(
             ids=[document["record_id"] for document in documents],
@@ -126,7 +139,11 @@ class LocalEmbeddingIndex:
             collection_name=collection_name,
             documents=documents,
             persist_path=persist_path,
+            client=client,
+            collection=collection,
         )
+
+
 
     @classmethod
     def load(cls, settings: Settings, embeddings_path: Path | None = None) -> "LocalEmbeddingIndex":
